@@ -53,16 +53,31 @@ struct CreatePostView: View {
                         .textFieldStyle(RoundedBorderTextFieldStyle())
 
                     // MARK: - Location Input
+//                    HStack {
+//                        TextField("Location (auto or type)", text: $vm.locationText)
+//                            .textFieldStyle(RoundedBorderTextFieldStyle())
+//                        Button(action: fillLocationFromManager) {
+//                            Image(systemName: "location.fill")
+//                                .foregroundColor(.blue)
+//                        }
+//                        .padding(.leading, 8)
+//                    }
+
+                    
                     HStack {
-                        TextField("Location (auto or type)", text: $vm.locationText)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                        Button(action: fillLocationFromManager) {
+                        TextField("Fetching location...", text: Binding(
+                            get: { locationManager.locationName.isEmpty ? vm.locationText : locationManager.locationName },
+                            set: { vm.locationText = $0 }
+                        ))
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .disabled(true)
+                        
+                        Button(action: { locationManager.requestLocation() }) {
                             Image(systemName: "location.fill")
                                 .foregroundColor(.blue)
                         }
-                        .padding(.leading, 8)
                     }
-
+                    
                     // MARK: - Post Button
                     Button(action: {
                         showConfirmAlert = true
@@ -76,6 +91,8 @@ struct CreatePostView: View {
                     .alert("Confirm Post", isPresented: $showConfirmAlert) {
                         Button("Confirm") {
                             // Save using the view model's internal context
+                            //vm.savePost()
+                            vm.locationText = locationManager.locationName
                             vm.savePost()
                             showSuccessAlert = true
                         }
@@ -89,6 +106,9 @@ struct CreatePostView: View {
                 .padding()
             }
             .navigationTitle("Create Post")
+            .onAppear{
+                locationManager.requestLocation()
+            }
             .alert("Post Created Successfully!", isPresented: $showSuccessAlert) {
                 Button("OK", role: .cancel) {
                     vm.resetFields()
@@ -97,13 +117,13 @@ struct CreatePostView: View {
         }
     }
 
-    private func fillLocationFromManager() {
-        if !locationManager.locationName.isEmpty {
-            vm.locationText = locationManager.locationName
-        } else {
-            locationManager.requestLocation()
-        }
-    }
+//    private func fillLocationFromManager() {
+//        if !locationManager.locationName.isEmpty {
+//            vm.locationText = locationManager.locationName
+//        } else {
+//            locationManager.requestLocation()
+//        }
+//    }
 }
 
 #Preview {
